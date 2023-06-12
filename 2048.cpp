@@ -1,7 +1,5 @@
-#include "game.hpp"
+#include "2048.hpp"
 #include "assets.hpp"
-#include <string.h>
-// #include "32blit.hpp"
 using namespace blit;
 
 #define SCREEN_HEIGHT 240
@@ -52,8 +50,8 @@ void renderBackground(){
 
 int genRandomPiece(){
     
-    uint pos, val;
-    uint max_rand = 10;
+    int pos, val;
+    int max_rand = 10;
 
     // lower the changes of appearing '4'
     for (int i = 0; i < 4; i++){
@@ -124,23 +122,19 @@ bool mergeRaw(int start, int end, int step){
     int direction = (start - end) < 0 ? 1 : -1;
     if (direction == 1){
         for (int i = start; i < end - step; i = i + step){
-            if (MAP[i] == MAP[i + step]){
+            if (MAP[i] != 0 && MAP[i] == MAP[i + step]){
                 MAP[i] *= 2;
                 MAP[i + step] = 0;
-                if (MAP[i] != 0){
-                    moved = true;
-                }            
+                moved = true;        
             }
         }
     }
     if (direction == -1){
         for (int i = start - 1; i >= end - step; i = i + step){
-            if (MAP[i] == MAP[i + step]){
+            if (MAP[i] != 0 && MAP[i] == MAP[i + step]){
                 MAP[i] *= 2;
                 MAP[i + step] = 0;
-                if (MAP[i] != 0){
-                    moved = true;
-                }
+                moved = true;
             }
         }
     }

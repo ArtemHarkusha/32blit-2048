@@ -1,6 +1,6 @@
-title: game title
-description: game description
-author: you
+title: "2048"
+description: "2048"
+author: Artem Harkusha
 splash:
   file: assets/no-image.png
 icon:
