@@ -16,7 +16,7 @@ bool moveDown();
 int MAP[16] = {0};
 // int MAP[16] = {2, 4, 8, 16,
 //                32, 64, 128, 256,
-//                8, 8, 2, 2,
+//                8, 8, 64, 512,
 //                32, 64, 128, 256};
 
 bool GAME_OVER=false;
@@ -134,7 +134,7 @@ bool mergeRaw(int start, int end, int step){
         }
     }
     if (direction == -1){
-        for (int i = start - 1; i > end - step; i = i + step){
+        for (int i = start - 1; i >= end - step; i = i + step){
             if (MAP[i] == MAP[i + step]){
                 MAP[i] *= 2;
                 MAP[i + step] = 0;
@@ -192,18 +192,40 @@ bool canMove(){
     }
 
     // if numbers can be merged we can move
-    for (int x = 0; x < 3; x++){
-        for (int y = 0; y < 4; y++){
-            if (MAP[x + 4*y] == MAP[MAP[x + 4*y +1]]){
-                canMove = true;
-                break;
+    // these nested loops only checks 3x3 field
+    // x x x o
+    // x x x o
+    // x x x o
+    // o o o 0
+    for (int x = 0; x < 3; x++){     
+        for (int y = 0; y < 3; y++){
+            if (MAP[x + 4*y] == MAP[x + 4*y +1]){
+                 canMove = true;
+                 break;
             }
             if (MAP[x + 4*y] == MAP[x + 4*y + 4]){
-                canMove = true;
-                break;
+                 canMove = true;
+                 break;
             }
         }
     }
+    
+    // now let's check the final raw
+    for (int i = 12; i < 15; i++){
+        if (MAP[i] == MAP[i + 1]){
+            canMove = true;
+            break;
+        }
+    }
+
+    // and the final column
+    for (int i = 3; i < 12; i = i + 4){
+        if (MAP[i] == MAP[i + 4]){
+            canMove = true;
+            break;
+        }
+    }
+
 
     return canMove;
 }
@@ -226,10 +248,10 @@ void renderGameOver(){
 void render(uint32_t time) {
 
     renderBackground();
-    if(GAME_OVER){
-        renderGameOver();
-        return;
-    }
+    // if(GAME_OVER){
+    //     renderGameOver();
+    //     return;
+    // }
     for (int x = 0; x < 4; x++) 
     {
         for (int y = 0; y < 4; y++)
