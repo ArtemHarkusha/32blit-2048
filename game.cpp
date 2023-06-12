@@ -13,10 +13,11 @@ bool moveLeft();
 bool moveRight();
 bool moveUp();
 bool moveDown();
-int MAP[16] = {2, 4, 8, 16,
-               32, 64, 128, 256,
-               8, 8, 2, 2,
-               32, 64, 128, 256};
+int MAP[16] = {0};
+// int MAP[16] = {2, 4, 8, 16,
+//                32, 64, 128, 256,
+//                8, 8, 2, 2,
+//                32, 64, 128, 256};
 
 bool GAME_OVER=false;
 
@@ -40,8 +41,8 @@ Rect n4096 = Rect(77,0,7,7);
 void init() {
     set_screen_mode(ScreenMode::hires);
     screen.sprites = Surface::load(sheet);
-    //genRandomPiece();
-    //genRandomPiece();
+    genRandomPiece();
+    genRandomPiece();
 }
 
 void renderBackground(){
@@ -83,12 +84,6 @@ int genRandomPiece(){
     return 1;
 }
 
-void swap(int * a, int * b){
-    int tmp = * a;
-    * a = * b;
-    * b = tmp;
-}
-
 bool pushZerosInRaw(int start, int end, int step){
     bool moved = false;
     //1 - forward; -1 - backward
@@ -98,8 +93,9 @@ bool pushZerosInRaw(int start, int end, int step){
         firstNonZero = start;
         for (int i = start; i < end; i = i + step){
             if (MAP[i] != 0){
-                swap(&MAP[i], &MAP[firstNonZero]);
                 if (i != firstNonZero){
+                    MAP[firstNonZero] = MAP[i];
+                    MAP[i] = 0;
                     moved = true;
                 }
                 firstNonZero = firstNonZero + step;
@@ -110,8 +106,9 @@ bool pushZerosInRaw(int start, int end, int step){
         firstNonZero = start - 1;
         for (int i = start - 1; i >= end; i = i + step){
             if (MAP[i] != 0){
-                swap(&MAP[i], &MAP[firstNonZero]);
                 if (i != firstNonZero){
+                    MAP[firstNonZero] = MAP[i];
+                    MAP[i] = 0;
                     moved = true;
                 }
                 firstNonZero = firstNonZero + step;
