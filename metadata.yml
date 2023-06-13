@@ -4,7 +4,7 @@ author: Artem Harkusha
 splash:
   file: assets/no-image.png
 icon:
-  file: assets/no-icon.png
+  file: assets/icon.png
 version: v0.0.1
 category: game # game, demo, utility, ...
 url: https://github.com/32blit/32blit-boilerplate

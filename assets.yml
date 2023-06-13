@@ -7,4 +7,6 @@ assets.cpp:
     name: asset_no_image
   assets/spritesheet.png:
     name: sheet
+  assets/menu.png:
+    name: menu
 

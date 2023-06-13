@@ -12,12 +12,16 @@ bool moveRight();
 bool moveUp();
 bool moveDown();
 int MAP[16] = {0};
-// int MAP[16] = {2, 4, 8, 16,
-//                32, 64, 128, 256,
-//                8, 8, 64, 512,
-//                32, 64, 128, 256};
+// int MAP[16] = {4, 4, 4, 4,
+//                2, 2, 2, 4,
+//                2, 2, 2, 4,
+//                2, 2, 2, 4};
 
-bool GAME_OVER=false;
+Surface* menuSurface;
+
+bool IN_MENU = true;
+bool GAME_OVER = false;
+uint32_t SCORE = 0;
 
 // numbers
 Rect n0 = Rect(84,0,7,7);
@@ -39,6 +43,7 @@ Rect n4096 = Rect(77,0,7,7);
 void init() {
     set_screen_mode(ScreenMode::hires);
     screen.sprites = Surface::load(sheet);
+    menuSurface = Surface::load(menu);
     genRandomPiece();
     genRandomPiece();
 }
@@ -51,7 +56,7 @@ void renderBackground(){
 int genRandomPiece(){
     
     int pos, val;
-    int max_rand = 10;
+    int max_rand = 15;
 
     // lower the changes of appearing '4'
     for (int i = 0; i < 4; i++){
@@ -124,6 +129,7 @@ bool mergeRaw(int start, int end, int step){
         for (int i = start; i < end - step; i = i + step){
             if (MAP[i] != 0 && MAP[i] == MAP[i + step]){
                 MAP[i] *= 2;
+                SCORE += MAP[i + step];
                 MAP[i + step] = 0;
                 moved = true;        
             }
@@ -133,6 +139,7 @@ bool mergeRaw(int start, int end, int step){
         for (int i = start - 1; i >= end - step; i = i + step){
             if (MAP[i] != 0 && MAP[i] == MAP[i + step]){
                 MAP[i] *= 2;
+                SCORE += MAP[i + step];
                 MAP[i + step] = 0;
                 moved = true;
             }
@@ -242,10 +249,13 @@ void renderGameOver(){
 void render(uint32_t time) {
 
     renderBackground();
-    // if(GAME_OVER){
-    //     renderGameOver();
-    //     return;
-    // }
+    if (IN_MENU) {
+        screen.stretch_blit(menuSurface, Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT), Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT));
+        screen.pen = Pen(255, 255, 255);
+        //screen.rectangle(Rect(85, 45, 120, 56));
+        screen.text("NEW GAME", outline_font, Point(135, 150));
+        return;
+    }
     for (int x = 0; x < 4; x++) 
     {
         for (int y = 0; y < 4; y++)
@@ -267,6 +277,16 @@ void render(uint32_t time) {
         
     }
 
+  // Draw the SCORE
+  screen.pen = Pen(255, 255, 255);
+  screen.rectangle(Rect(0, 0, 40, 10));
+  screen.pen = Pen(0, 0, 0);
+  screen.text("S: " + std::to_string(SCORE), minimal_font, Point(2, 2));
+
+  if(GAME_OVER){
+    renderGameOver();
+    return;
+  }
 }
 
     
@@ -278,9 +298,14 @@ void render(uint32_t time) {
 // amount if milliseconds elapsed since the start of your game
 //
 void update(uint32_t time) {
-    //if (canMove()){
-    //    memset(MAP, 0, sizeof(MAP));
-    //}
+    
+    if (IN_MENU) {
+        if (buttons.released & Button::A){
+            IN_MENU = false;
+        }
+        return;
+    }
+
     if (buttons.released & Button::DPAD_UP){
         if (moveUp()) {
             genRandomPiece();
