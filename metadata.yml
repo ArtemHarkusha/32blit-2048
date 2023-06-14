@@ -2,9 +2,9 @@ title: "2048"
 description: "32blit clone of the popular 2048 puzzle game"
 author: Artem Harkusha
 splash:
-  file: assets/no-image.png
+  file: assets/splash.png
 icon:
   file: assets/icon.png
-version: v0.1.1
+version: v0.2.1
 category: game # game, demo, utility, ...
 url: https://github.com/32blit/32blit-boilerplate
