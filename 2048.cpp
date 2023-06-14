@@ -12,8 +12,8 @@ bool moveRight();
 bool moveUp();
 bool moveDown();
 int MAP[16] = {0};
-// int MAP[16] = {4, 4, 4, 4,
-//                2, 2, 2, 4,
+// int MAP[16] = {16384, 8192, 4096, 2048,
+//                65536, 32768, 2, 4,
 //                2, 2, 2, 4,
 //                2, 2, 2, 4};
 
@@ -24,19 +24,23 @@ bool GAME_OVER = false;
 uint32_t SCORE = 0;
 
 // numbers
-Rect n0 = Rect(84,0,7,7);
-Rect n2 = Rect(0,0,7,7);
-Rect n4 = Rect(7,0,7,7);
-Rect n8 = Rect(14,0,7,7);
-Rect n16 = Rect(21,0,7,7);
-Rect n32 = Rect(28,0,7,7);
-Rect n64 = Rect(35,0,7,7);
-Rect n128 = Rect(42,0,7,7);
-Rect n256 = Rect(49,0,7,7);
-Rect n512 = Rect(56,0,7,7);
-Rect n1024 = Rect(63,0,7,7);
-Rect n2048 = Rect(70,0,7,7);
-Rect n4096 = Rect(77,0,7,7);
+Rect n0 = Rect(0,0,7,7);
+Rect n2 = Rect(7,0,7,7);
+Rect n4 = Rect(14,0,7,7);
+Rect n8 = Rect(21,0,7,7);
+Rect n16 = Rect(28,0,7,7);
+Rect n32 = Rect(35,0,7,7);
+Rect n64 = Rect(42,0,7,7);
+Rect n128 = Rect(49,0,7,7);
+Rect n256 = Rect(56,0,7,7);
+Rect n512 = Rect(63,0,7,7);
+Rect n1024 = Rect(70,0,7,7);
+Rect n2048 = Rect(77,0,7,7);
+Rect n4096 = Rect(84,0,7,7);
+Rect n8191 = Rect(91,0,7,7);
+Rect n16384 = Rect(98,0,7,7);
+Rect n32768 = Rect(105,0,7,7);
+Rect n65536 = Rect(112,0,7,7);
 ///////////////////////////////////////////////////////////////////////////
 
 
@@ -272,7 +276,12 @@ void render(uint32_t time) {
             if (MAP[x + 4*y] == 512){screen.sprite(n512, Point(42 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
             if (MAP[x + 4*y] == 1024){screen.sprite(n1024, Point(42 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
             if (MAP[x + 4*y] == 2048){screen.sprite(n2048, Point(42 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 4096){screen.sprite(n4096, Point(42 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));} 
+            if (MAP[x + 4*y] == 4096){screen.sprite(n4096, Point(42 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+            if (MAP[x + 4*y] == 8192){screen.sprite(n8191, Point(42 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));} 
+            if (MAP[x + 4*y] == 16384){screen.sprite(n16384, Point(42 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));} 
+            if (MAP[x + 4*y] == 32768){screen.sprite(n32768, Point(42 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+            if (MAP[x + 4*y] == 65536){screen.sprite(n65536, Point(42 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));} 
+            
         }
         
     }
