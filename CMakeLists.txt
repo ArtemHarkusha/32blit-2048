@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.9)
 project(2048)
 
 # Add your sources here (adding headers is optional, but helps some CMake generators)
-set(PROJECT_SOURCE 2048.cpp 2048.hpp)
+set(PROJECT_SOURCE 2048.cpp 2048.hpp game_logic.cpp game_logic.hpp)
 
 # ... and any other files you want in the release here
 set(PROJECT_DISTRIBS LICENSE README.md)

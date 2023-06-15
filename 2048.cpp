@@ -1,16 +1,13 @@
 #include "2048.hpp"
 #include "assets.hpp"
+#include "game_logic.hpp"
+
 using namespace blit;
 
 #define SCREEN_HEIGHT 240
 #define SCREEN_WEIGHT 320
 #define SQURE_SIZE 58
 
-int genRandomPiece();
-bool moveLeft();
-bool moveRight();
-bool moveUp();
-bool moveDown();
 int MAP[16] = {0};
 // int MAP[16] = {16384, 8192, 4096, 2048,
 //                65536, 32768, 2, 4,
@@ -61,8 +58,8 @@ void init() {
     set_screen_mode(ScreenMode::hires);
     screen.sprites = Surface::load(sheet);
     menuSurface = Surface::load(menu);
-    genRandomPiece();
-    genRandomPiece();
+    genRandomPiece(MAP);
+    genRandomPiece(MAP);
 }
 
 void renderBackground(){
@@ -70,183 +67,6 @@ void renderBackground(){
     screen.clear();
     screen.pen = Pen(0, 0, 0);
     screen.rectangle(Rect(0, 0, 320, 240));
-}
-
-int genRandomPiece(){
-    
-    int pos, val;
-    int max_rand = 15;
-
-    // lower the changes of appearing '4'
-    for (int i = 0; i < 4; i++){
-        val = ((blit::random() % 2) == 0) ? 2 : 4;
-        if (val == 2){
-            break;
-        }
-    }
-    
-    while (max_rand != 0){
-        pos = blit::random() % 16;
-        if (MAP[pos] == 0){
-            MAP[pos] = val;
-            return 0;
-        }
-        max_rand--;
-    }
-
-    //did not find with rand(); try search
-    for (int i = 0; i < 16; i++){
-        if (MAP[i] == 0){
-            MAP[i] = val;
-            return 0;
-        }
-    }
-    
-    // we should not reach here. error
-    return 1;
-}
-
-bool pushZerosInRaw(int start, int end, int step){
-    bool moved = false;
-    //1 - forward; -1 - backward
-    int direction = (start - end) < 0 ? 1 : -1;
-    int firstNonZero;
-    if (direction == 1){
-        firstNonZero = start;
-        for (int i = start; i < end; i = i + step){
-            if (MAP[i] != 0){
-                if (i != firstNonZero){
-                    MAP[firstNonZero] = MAP[i];
-                    MAP[i] = 0;
-                    moved = true;
-                }
-                firstNonZero = firstNonZero + step;
-            }
-        }
-    }
-    if (direction == -1){
-        firstNonZero = start - 1;
-        for (int i = start - 1; i >= end; i = i + step){
-            if (MAP[i] != 0){
-                if (i != firstNonZero){
-                    MAP[firstNonZero] = MAP[i];
-                    MAP[i] = 0;
-                    moved = true;
-                }
-                firstNonZero = firstNonZero + step;
-            }
-        }
-    }
-    return moved;
-}
-
-bool mergeRaw(int start, int end, int step){
-    bool moved = false;
-    //1 - forward; -1 - backward
-    int direction = (start - end) < 0 ? 1 : -1;
-    if (direction == 1){
-        for (int i = start; i < end - step; i = i + step){
-            if (MAP[i] != 0 && MAP[i] == MAP[i + step]){
-                MAP[i] *= 2;
-                SCORE += MAP[i + step];
-                MAP[i + step] = 0;
-                moved = true;        
-            }
-        }
-    }
-    if (direction == -1){
-        for (int i = start - 1; i >= end - step; i = i + step){
-            if (MAP[i] != 0 && MAP[i] == MAP[i + step]){
-                MAP[i] *= 2;
-                SCORE += MAP[i + step];
-                MAP[i + step] = 0;
-                moved = true;
-            }
-        }
-    }
-    return moved;
-}
-
-bool moveLeft(){
-    bool moved = false;
-    for (int i = 0; i < 4; i++){
-        moved |= pushZerosInRaw(i * 4, i * 4 + 4, 1) | mergeRaw(i * 4, i * 4 + 4, 1) | 
-                 pushZerosInRaw(i * 4, i * 4 + 4, 1);
-    }
-    return moved;
-}
-
-bool moveRight(){
-    bool moved = false;
-    for (int i = 0; i < 4; i++){
-        moved |= pushZerosInRaw(i * 4 + 4, i * 4, -1) | mergeRaw(i * 4 + 4, i * 4, -1) | 
-                 pushZerosInRaw(i * 4 + 4, i * 4, -1);
-    }
-    return moved;
-}
-
-bool moveUp(){
-    bool moved = false;
-    for (int i = 0; i < 4; i++){
-        moved |= pushZerosInRaw(i, 16, 4) | mergeRaw(i, 16, 4) | pushZerosInRaw(i, 16, 4);
-    }
-    return moved;
-}
-
-bool moveDown(){
-    bool moved = false;
-    for (int i = 0; i < 4; i++){
-        moved |= pushZerosInRaw(16 - i, 0, -4) | mergeRaw(16 - i, 0, -4) | pushZerosInRaw(16 - i, 0, -4);
-    }
-    return moved;
-}
-
-bool canMove(){
-    // if there is an empty slot we can move
-    for (int i = 0; i < 16; i++){
-        if(MAP[i] == 0){
-            return true;
-            break;
-        }
-    }
-
-    // if numbers can be merged we can move
-    // these nested loops only checks 3x3 field
-    // x x x o
-    // x x x o
-    // x x x o
-    // o o o 0
-    for (int x = 0; x < 3; x++){     
-        for (int y = 0; y < 3; y++){
-            if (MAP[x + 4*y] == MAP[x + 4*y +1]){
-                 return true;
-                 break;
-            }
-            if (MAP[x + 4*y] == MAP[x + 4*y + 4]){
-                 return true;
-                 break;
-            }
-        }
-    }
-    
-    // now let's check the final raw
-    for (int i = 12; i < 15; i++){
-        if (MAP[i] == MAP[i + 1]){
-            return true;
-            break;
-        }
-    }
-
-    // and the final column
-    for (int i = 3; i < 12; i = i + 4){
-        if (MAP[i] == MAP[i + 4]){
-            return true;
-            break;
-        }
-    }
-
-
-    return false;
 }
 
 void renderGameOver(){
@@ -362,20 +182,20 @@ void update(uint32_t time) {
     }
 
     if (buttons.released & Button::DPAD_UP){
-        moved = moveUp();
+        moved = moveUp(MAP, &SCORE);
     }
     if (buttons.released & Button::DPAD_DOWN){
-        moved = moveDown();
+        moved = moveDown(MAP, &SCORE);
     }
     if (buttons.released & Button::DPAD_LEFT){
-        moved = moveLeft();
+        moved = moveLeft(MAP, &SCORE);
     }
     if (buttons.released & Button::DPAD_RIGHT){
-        moved = moveRight();
+        moved = moveRight(MAP, &SCORE);
     }
     if (moved){
-        genRandomPiece();
+        genRandomPiece(MAP);
         MOVES++;
     }
-    GAME_OVER = ! canMove();
+    GAME_OVER = ! canMove(MAP);
 }
