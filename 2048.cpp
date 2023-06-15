@@ -20,9 +20,21 @@ int MAP[16] = {0};
 Surface* menuSurface;
 
 bool IN_MENU = true;
+bool IN_HS = false;
+bool IN_GAME = false;
 bool GAME_OVER = false;
 uint32_t SCORE = 0;
 uint32_t MOVES = 0;
+
+struct S_MENU {
+    bool ngSelected = true;
+    bool hsSelected = false;
+    Pen inactive = Pen(255, 255, 255);
+    Pen active = Pen(0, 255, 0);
+};
+
+struct S_MENU MY_MENU;
+
 
 // numbers
 Rect n0 = Rect(0,0,7,7);
@@ -257,11 +269,33 @@ void render(uint32_t time) {
     renderBackground();
     if (IN_MENU) {
         screen.stretch_blit(menuSurface, Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT), Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT));
-        screen.pen = Pen(255, 255, 255);
-        //screen.rectangle(Rect(85, 45, 120, 56));
-        screen.text("NEW GAME", outline_font, Point(135, 150));
+
+        if (MY_MENU.ngSelected){
+            screen.pen = MY_MENU.active;
+            screen.text("NEW GAME", font, Point(125, 150));
+        }else {
+            screen.pen = MY_MENU.inactive;
+            screen.text("NEW GAME", font, Point(125, 150));
+        }
+        
+        if (MY_MENU.hsSelected){
+            screen.pen = MY_MENU.active;
+            screen.text("HIGH SCORE", font, Point(117, 171));
+        }else {
+            screen.pen = MY_MENU.inactive;
+            screen.text("HIGH SCORE", font, Point(117, 171));
+        }
+        
         return;
     }
+
+    if (IN_HS){
+        screen.alpha = 128;
+        screen.pen = Pen(0,0,0);
+        screen.rectangle(Rect(0, 0, 240, 240));
+    }
+
+    if(IN_GAME){
     for (int x = 0; x < 4; x++) 
     {
         for (int y = 0; y < 4; y++)
@@ -287,12 +321,13 @@ void render(uint32_t time) {
         }
         
     }
+    
 
   // Draw the SCORE
-  screen.pen = Pen(255, 255, 255);
+  screen.pen = Pen(0, 255, 0);
   screen.text("SCORE: " + std::to_string(SCORE), minimal_font, Point(255, 2));
   screen.text("MOVES: " + std::to_string(MOVES), minimal_font, Point(255, 15));
-
+    }
   if(GAME_OVER){
     renderGameOver();
     return;
@@ -311,8 +346,17 @@ void update(uint32_t time) {
     
     bool moved = false;
     if (IN_MENU) {
-        if (buttons.released & Button::A){
+        if (buttons.released & (Button::DPAD_UP | Button::DPAD_DOWN)){
+            MY_MENU.hsSelected = ! MY_MENU.hsSelected;
+            MY_MENU.ngSelected = ! MY_MENU.ngSelected;
+        }     
+        if (buttons.released & Button::A && MY_MENU.ngSelected){
             IN_MENU = false;
+            IN_GAME = true;
+        }
+        if (buttons.released & Button::A && MY_MENU.hsSelected){
+            IN_MENU = false;
+            IN_HS = true;
         }
         return;
     }

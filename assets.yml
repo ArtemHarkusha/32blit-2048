@@ -9,4 +9,7 @@ assets.cpp:
     name: sheet
   assets/menu.png:
     name: menu
+  assets/monofonto.regular.ttf:
+    name: font
+    height: 16
 
