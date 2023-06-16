@@ -16,13 +16,24 @@ int MAP[16] = {0};
 
 Surface* menuSurface;
 
+// to display menu if true
 bool IN_MENU = true;
+// to display high score if true
 bool IN_HS = false;
+// go to the game if true
 bool IN_GAME = false;
+// to display 'GAME OVER' if true
 bool GAME_OVER = false;
+// to display high score saving
+bool IN_HS_INPUT = true;
+// initial highlighted charecter in high score saving
+char HS_CHAR_SELECTED = 'A';
+// initial SCORE
 uint32_t SCORE = 0;
+// initial MOVES number
 uint32_t MOVES = 0;
 
+// struct of the menu entry
 struct MENU_ENTRY {
     std::string name;
     bool active;
@@ -35,7 +46,7 @@ MENU_ENTRY MENU_ENTRIES[2] =
     { "HIGH SCORE", false,  Point(117, 171) },
  };
 
-// numbers
+// game tiles
 Rect n0 = Rect(0,0,7,7);
 Rect n2 = Rect(7,0,7,7);
 Rect n4 = Rect(14,0,7,7);
@@ -79,6 +90,25 @@ void renderGameOver(){
     screen.text("GAME OVER", fat_font, Point(115, 140));
 }
 
+void renderKeyboard(){
+   char k[2];
+
+   screen.alpha = 128;
+   screen.pen = Pen(0, 255, 0);
+   screen.rectangle(Rect(0, 120, 320, 120));
+   screen.alpha = 255;
+   for (int j = 0; j < 2; j++){
+    for (int i = 0; i < 13; i++){
+        k[0] = 'A' + i + 13 * j;
+        screen.pen = HS_CHAR_SELECTED == k[0] ? Pen(0, 255, 0) : Pen(255, 255, 255);
+        screen.text(k, font, Point(60 + 16 * i, 130 + 16 * j));
+    }
+   }
+   screen.pen = Pen(255, 255, 255);
+   screen.text("CONFIRM", font, Point(120, 180));
+   
+}
+
 ///////////////////////////////////////////////////////////////////////////
 //
 // render(time)
@@ -91,6 +121,7 @@ void render(uint32_t time) {
     renderBackground();
     if (IN_MENU) {
         screen.stretch_blit(menuSurface, Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT), Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT));
+        renderKeyboard();
         for (auto e : MENU_ENTRIES){
             screen.pen = e.active ? Pen(0, 255, 0) : Pen(255, 255, 255);
             screen.text(e.name, font, e.pos);
@@ -145,8 +176,8 @@ void render(uint32_t time) {
     }
         // Draw the SCORE
         screen.pen = Pen(0, 255, 0);
-        screen.text("SCORE: " + std::to_string(SCORE), minimal_font, Point(255, 2));
-        screen.text("MOVES: " + std::to_string(MOVES), minimal_font, Point(255, 15));
+        screen.text("SCORE:" + std::to_string(SCORE), font, Point(245, 5));
+        screen.text("MOVES:" + std::to_string(MOVES), font, Point(245, 25));
     }
 
   if(GAME_OVER){
@@ -166,6 +197,34 @@ void render(uint32_t time) {
 void update(uint32_t time) {
     
     bool moved = false;
+
+    if (IN_HS_INPUT){
+        if (buttons.released & Button::DPAD_UP){
+            HS_CHAR_SELECTED -= 13;
+            if (HS_CHAR_SELECTED < 'A'){
+                HS_CHAR_SELECTED += 26;
+            }
+        }
+        if (buttons.released & Button::DPAD_DOWN){
+            HS_CHAR_SELECTED += 13;
+            if (HS_CHAR_SELECTED > 'Z'){
+                HS_CHAR_SELECTED -= 26;
+            }
+        }
+        if (buttons.released & Button::DPAD_LEFT){
+            HS_CHAR_SELECTED--;
+            if (HS_CHAR_SELECTED < 'A'){
+                HS_CHAR_SELECTED = 'A';
+            }
+        }
+        if (buttons.released & Button::DPAD_RIGHT){
+            HS_CHAR_SELECTED++;
+            if (HS_CHAR_SELECTED > 'Z'){
+                HS_CHAR_SELECTED = 'Z';
+            }
+        }
+    }
+
     if (IN_MENU) {
         if (buttons.released & (Button::DPAD_UP | Button::DPAD_DOWN)){
             MENU_ENTRIES[0].active = ! MENU_ENTRIES[0].active;
