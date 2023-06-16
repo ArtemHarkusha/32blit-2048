@@ -23,15 +23,17 @@ bool GAME_OVER = false;
 uint32_t SCORE = 0;
 uint32_t MOVES = 0;
 
-struct S_MENU {
-    bool ngSelected = true;
-    bool hsSelected = false;
-    Pen inactive = Pen(255, 255, 255);
-    Pen active = Pen(0, 255, 0);
+struct MENU_ENTRY {
+    std::string name;
+    bool active;
+    Point pos;
 };
 
-struct S_MENU MY_MENU;
-
+MENU_ENTRY MENU_ENTRIES[2] = 
+ {
+    { "NEW GAME", true, Point(125, 150) },
+    { "HIGH SCORE", false,  Point(117, 171) },
+ };
 
 // numbers
 Rect n0 = Rect(0,0,7,7);
@@ -89,65 +91,64 @@ void render(uint32_t time) {
     renderBackground();
     if (IN_MENU) {
         screen.stretch_blit(menuSurface, Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT), Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT));
-
-        if (MY_MENU.ngSelected){
-            screen.pen = MY_MENU.active;
-            screen.text("NEW GAME", font, Point(125, 150));
-        }else {
-            screen.pen = MY_MENU.inactive;
-            screen.text("NEW GAME", font, Point(125, 150));
+        for (auto e : MENU_ENTRIES){
+            screen.pen = e.active ? Pen(0, 255, 0) : Pen(255, 255, 255);
+            screen.text(e.name, font, e.pos);
         }
-        
-        if (MY_MENU.hsSelected){
-            screen.pen = MY_MENU.active;
-            screen.text("HIGH SCORE", font, Point(117, 171));
-        }else {
-            screen.pen = MY_MENU.inactive;
-            screen.text("HIGH SCORE", font, Point(117, 171));
-        }
-        
-        return;
     }
 
     if (IN_HS){
+        menuSurface->alpha = 25;
+        
+        menuSurface->pen = Pen(0,128,0);
+        
+        screen.stretch_blit(menuSurface, Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT), Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT));
+        screen.pen = Pen(0,128,0);
         screen.alpha = 128;
-        screen.pen = Pen(0,0,0);
-        screen.rectangle(Rect(0, 0, 240, 240));
+        screen.rectangle(Rect(40, 0, 240, 240));
+        screen.pen = Pen(255, 255, 255);
+        screen.alpha = 255;
+        screen.text("PETER:\t\t\t\t\t\t1000", font, Point(80, 85));
+        screen.text("NORMAN:\t\t\t\t\t\t1000", font, Point(80, 105));
+        screen.text("PETER:\t\t\t\t\t\t1000", font, Point(80, 125));
+        screen.text("NORMAN:\t\t\t\t\t\t1000", font, Point(80, 145));
+        screen.text("PETER:\t\t\t\t\t\t1000", font, Point(80, 165));
+        screen.text("NORMAN:\t\t\t\t\t\t1000", font, Point(80, 185));
+        screen.text("PETER:\t\t\t\t\t\t1000", font, Point(80, 205));
+
     }
 
     if(IN_GAME){
-    for (int x = 0; x < 4; x++) 
-    {
-        for (int y = 0; y < 4; y++)
+        for (int x = 0; x < 4; x++) 
         {
-            if (MAP[x + 4*y] == 0){ screen.sprite(n0, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 2){ screen.sprite(n2, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 4){screen.sprite(n4, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 8){screen.sprite(n8, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 16){screen.sprite(n16, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 32){screen.sprite(n32, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 64){screen.sprite(n64, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 128){screen.sprite(n128, Point(5 + x *SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 256){screen.sprite(n256, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 512){screen.sprite(n512, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 1024){screen.sprite(n1024, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 2048){screen.sprite(n2048, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 4096){screen.sprite(n4096, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 8192){screen.sprite(n8191, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));} 
-            if (MAP[x + 4*y] == 16384){screen.sprite(n16384, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));} 
-            if (MAP[x + 4*y] == 32768){screen.sprite(n32768, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
-            if (MAP[x + 4*y] == 65536){screen.sprite(n65536, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));} 
-            
-        }
-        
+            for (int y = 0; y < 4; y++)
+            {
+                if (MAP[x + 4*y] == 0){ screen.sprite(n0, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+                if (MAP[x + 4*y] == 2){ screen.sprite(n2, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+                if (MAP[x + 4*y] == 4){screen.sprite(n4, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+                if (MAP[x + 4*y] == 8){screen.sprite(n8, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+                if (MAP[x + 4*y] == 16){screen.sprite(n16, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+                if (MAP[x + 4*y] == 32){screen.sprite(n32, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+                if (MAP[x + 4*y] == 64){screen.sprite(n64, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+                if (MAP[x + 4*y] == 128){screen.sprite(n128, Point(5 + x *SQURE_SIZE, 2 + y * SQURE_SIZE));}
+                if (MAP[x + 4*y] == 256){screen.sprite(n256, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+                if (MAP[x + 4*y] == 512){screen.sprite(n512, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+                if (MAP[x + 4*y] == 1024){screen.sprite(n1024, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+                if (MAP[x + 4*y] == 2048){screen.sprite(n2048, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+                if (MAP[x + 4*y] == 4096){screen.sprite(n4096, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+                if (MAP[x + 4*y] == 8192){screen.sprite(n8191, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));} 
+                if (MAP[x + 4*y] == 16384){screen.sprite(n16384, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));} 
+                if (MAP[x + 4*y] == 32768){screen.sprite(n32768, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));}
+                if (MAP[x + 4*y] == 65536){screen.sprite(n65536, Point(5 + x * SQURE_SIZE, 2 + y * SQURE_SIZE));} 
+                
+            }        
     }
-    
+        // Draw the SCORE
+        screen.pen = Pen(0, 255, 0);
+        screen.text("SCORE: " + std::to_string(SCORE), minimal_font, Point(255, 2));
+        screen.text("MOVES: " + std::to_string(MOVES), minimal_font, Point(255, 15));
+    }
 
-  // Draw the SCORE
-  screen.pen = Pen(0, 255, 0);
-  screen.text("SCORE: " + std::to_string(SCORE), minimal_font, Point(255, 2));
-  screen.text("MOVES: " + std::to_string(MOVES), minimal_font, Point(255, 15));
-    }
   if(GAME_OVER){
     renderGameOver();
     return;
@@ -167,16 +168,24 @@ void update(uint32_t time) {
     bool moved = false;
     if (IN_MENU) {
         if (buttons.released & (Button::DPAD_UP | Button::DPAD_DOWN)){
-            MY_MENU.hsSelected = ! MY_MENU.hsSelected;
-            MY_MENU.ngSelected = ! MY_MENU.ngSelected;
+            MENU_ENTRIES[0].active = ! MENU_ENTRIES[0].active;
+            MENU_ENTRIES[1].active = ! MENU_ENTRIES[1].active;
         }     
-        if (buttons.released & Button::A && MY_MENU.ngSelected){
+        if (buttons.released & Button::A && MENU_ENTRIES[0].active){
             IN_MENU = false;
             IN_GAME = true;
         }
-        if (buttons.released & Button::A && MY_MENU.hsSelected){
-            IN_MENU = false;
+        if (buttons.released & Button::A && MENU_ENTRIES[1].active){
             IN_HS = true;
+            IN_MENU = false;
+        }
+        return;
+    }
+
+    if (IN_HS){
+        if (buttons.released & Button::B){
+            IN_HS = false;
+            IN_MENU = true;
         }
         return;
     }
