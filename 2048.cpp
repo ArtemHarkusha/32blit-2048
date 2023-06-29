@@ -1,6 +1,7 @@
 #include "2048.hpp"
 #include "assets.hpp"
 #include "game_logic.hpp"
+#include <cstring>
 
 using namespace blit;
 
@@ -25,9 +26,12 @@ bool IN_GAME = false;
 // to display 'GAME OVER' if true
 bool GAME_OVER = false;
 // to display high score saving
-bool IN_HS_INPUT = true;
+bool IN_HS_INPUT = false;
 // initial highlighted charecter in high score saving
 char HS_CHAR_SELECTED = 'A';
+char HS_ENTRY_NAME[10] = {'_', '_', '_', '_', '_', '_', '_', '_', '_', '_'};
+bool HS_CONFIRM_SELECTED = false;
+int HS_ENTRY_INDEX = 0;
 // initial SCORE
 uint32_t SCORE = 0;
 // initial MOVES number
@@ -97,14 +101,19 @@ void renderKeyboard(){
    screen.pen = Pen(0, 255, 0);
    screen.rectangle(Rect(0, 120, 320, 120));
    screen.alpha = 255;
+
+   screen.pen = Pen(255, 255, 255);
+   
+   screen.text(HS_ENTRY_NAME, font, Point(120, 120));
+
    for (int j = 0; j < 2; j++){
     for (int i = 0; i < 13; i++){
         k[0] = 'A' + i + 13 * j;
         screen.pen = HS_CHAR_SELECTED == k[0] ? Pen(0, 255, 0) : Pen(255, 255, 255);
-        screen.text(k, font, Point(60 + 16 * i, 130 + 16 * j));
+        screen.text(k, font, Point(60 + 16 * i, 150 + 16 * j));
     }
    }
-   screen.pen = Pen(255, 255, 255);
+   screen.pen = HS_CONFIRM_SELECTED ? Pen(0, 255, 0) : Pen(255, 255, 255);
    screen.text("CONFIRM", font, Point(120, 180));
    
 }
@@ -119,9 +128,13 @@ void renderKeyboard(){
 void render(uint32_t time) {
 
     renderBackground();
-    if (IN_MENU) {
-        screen.stretch_blit(menuSurface, Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT), Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT));
+
+    if (IN_HS_INPUT){
         renderKeyboard();
+    }
+
+    if (IN_MENU) {
+        screen.stretch_blit(menuSurface, Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT), Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT)); 
         for (auto e : MENU_ENTRIES){
             screen.pen = e.active ? Pen(0, 255, 0) : Pen(255, 255, 255);
             screen.text(e.name, font, e.pos);
@@ -176,8 +189,8 @@ void render(uint32_t time) {
     }
         // Draw the SCORE
         screen.pen = Pen(0, 255, 0);
-        screen.text("SCORE:" + std::to_string(SCORE), font, Point(245, 5));
-        screen.text("MOVES:" + std::to_string(MOVES), font, Point(245, 25));
+        screen.text("SCORE:" + std::to_string(SCORE), minimal_font, Point(245, 5));
+        screen.text("MOVES:" + std::to_string(MOVES), minimal_font, Point(245, 25));
     }
 
   if(GAME_OVER){
@@ -199,25 +212,55 @@ void update(uint32_t time) {
     bool moved = false;
 
     if (IN_HS_INPUT){
+
+        if (HS_CHAR_SELECTED <= 'Z'){
+            HS_CONFIRM_SELECTED = false;
+        }
+        if (HS_CHAR_SELECTED > 'Z'){
+            HS_CONFIRM_SELECTED = true;
+        }
+
+        if (buttons.released & Button::A){
+            if (HS_CONFIRM_SELECTED) return;
+            HS_ENTRY_NAME[HS_ENTRY_INDEX] = HS_CHAR_SELECTED;
+            HS_ENTRY_INDEX++;
+
+            if(HS_ENTRY_INDEX > 9){
+               HS_ENTRY_INDEX--;
+            }
+        }
+
+        if (buttons.released & Button::B){
+            HS_ENTRY_NAME[HS_ENTRY_INDEX] = '_';
+            HS_ENTRY_INDEX--;
+            if(HS_ENTRY_INDEX < 0){
+               HS_ENTRY_INDEX++;
+            }
+        }
+
         if (buttons.released & Button::DPAD_UP){
             HS_CHAR_SELECTED -= 13;
+
             if (HS_CHAR_SELECTED < 'A'){
-                HS_CHAR_SELECTED += 26;
+                HS_CHAR_SELECTED += 39;
             }
         }
         if (buttons.released & Button::DPAD_DOWN){
             HS_CHAR_SELECTED += 13;
-            if (HS_CHAR_SELECTED > 'Z'){
-                HS_CHAR_SELECTED -= 26;
+            
+            if (HS_CHAR_SELECTED >= 'h'){
+                HS_CHAR_SELECTED -= 39;
             }
         }
         if (buttons.released & Button::DPAD_LEFT){
+            if (HS_CONFIRM_SELECTED) return; 
             HS_CHAR_SELECTED--;
             if (HS_CHAR_SELECTED < 'A'){
                 HS_CHAR_SELECTED = 'A';
             }
         }
         if (buttons.released & Button::DPAD_RIGHT){
+            if (HS_CONFIRM_SELECTED) return;
             HS_CHAR_SELECTED++;
             if (HS_CHAR_SELECTED > 'Z'){
                 HS_CHAR_SELECTED = 'Z';
