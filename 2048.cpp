@@ -37,6 +37,13 @@ uint32_t SCORE = 0;
 // initial MOVES number
 uint32_t MOVES = 0;
 
+struct SAVE_ENTRY {
+    char name[10];
+    uint32_t score;
+};
+
+SAVE_ENTRY SAVE_DATA[7];
+
 // struct of the menu entry
 struct MENU_ENTRY {
     std::string name;
@@ -75,6 +82,16 @@ void init() {
     set_screen_mode(ScreenMode::hires);
     screen.sprites = Surface::load(sheet);
     menuSurface = Surface::load(menu);
+
+    if (read_save(SAVE_DATA, 0)){
+        // loaded
+    } else {
+        for (int i = 0; i < 7; i++){
+            strncpy(SAVE_DATA[i].name, "__________", 10);
+            SAVE_DATA[i].score = 0;
+        }
+    }
+
     genRandomPiece(MAP);
     genRandomPiece(MAP);
 }
@@ -84,14 +101,6 @@ void renderBackground(){
     screen.clear();
     screen.pen = Pen(0, 0, 0);
     screen.rectangle(Rect(0, 0, 320, 240));
-}
-
-void renderGameOver(){
-    screen.clear();
-    screen.pen = Pen(255, 255, 255);
-    screen.rectangle(Rect(0, 0, 320, 240));
-    screen.pen = Pen(0, 0, 0);
-    screen.text("GAME OVER", fat_font, Point(115, 140));
 }
 
 void renderKeyboard(){
@@ -118,6 +127,62 @@ void renderKeyboard(){
    
 }
 
+int compareScore(const void *a, const void *b) {
+  
+    SAVE_ENTRY *A = (SAVE_ENTRY *)a;
+    SAVE_ENTRY *B = (SAVE_ENTRY *)b;
+  
+    return (B->score - A->score);
+}
+
+
+bool newRecord(){
+    // if we hve free slot
+    for (int i = 6; i >= 0; i--){
+        if(SAVE_DATA[i].score == 0) {
+            return true;
+        }
+    }
+
+    // if no free slots
+    for (int i = 6; i >= 0; i--){
+        if(SAVE_DATA[i].score < SCORE){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void saveRecord(){
+    int newScorePos = -1;
+
+    // if we hve free slot
+    for (int i = 6; i >= 0; i--){
+        if(SAVE_DATA[i].score == 0) {
+            newScorePos = i;
+        }
+    }
+
+    // if no free slots
+    if (newScorePos == -1){
+        for (int i = 6; i >= 0; i--){
+            if(SAVE_DATA[i].score < SCORE){
+                newScorePos = i;
+            }
+        }
+    }
+
+    // put new record
+    if (newScorePos >= 0){
+        strncpy(SAVE_DATA[newScorePos].name, HS_ENTRY_NAME, 10);
+        SAVE_DATA[newScorePos].score = SCORE;
+        // sort record table
+        qsort(SAVE_DATA, 7, sizeof(SAVE_ENTRY), compareScore);
+        write_save(SAVE_DATA);
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////
 //
 // render(time)
@@ -129,37 +194,14 @@ void render(uint32_t time) {
 
     renderBackground();
 
-    if (IN_HS_INPUT){
-        renderKeyboard();
-    }
-
     if (IN_MENU) {
-        screen.stretch_blit(menuSurface, Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT), Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT)); 
-        for (auto e : MENU_ENTRIES){
-            screen.pen = e.active ? Pen(0, 255, 0) : Pen(255, 255, 255);
-            screen.text(e.name, font, e.pos);
-        }
-    }
-
-    if (IN_HS){
-        menuSurface->alpha = 25;
-        
-        menuSurface->pen = Pen(0,128,0);
-        
         screen.stretch_blit(menuSurface, Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT), Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT));
-        screen.pen = Pen(0,128,0);
-        screen.alpha = 128;
-        screen.rectangle(Rect(40, 0, 240, 240));
-        screen.pen = Pen(255, 255, 255);
-        screen.alpha = 255;
-        screen.text("PETER:\t\t\t\t\t\t1000", font, Point(80, 85));
-        screen.text("NORMAN:\t\t\t\t\t\t1000", font, Point(80, 105));
-        screen.text("PETER:\t\t\t\t\t\t1000", font, Point(80, 125));
-        screen.text("NORMAN:\t\t\t\t\t\t1000", font, Point(80, 145));
-        screen.text("PETER:\t\t\t\t\t\t1000", font, Point(80, 165));
-        screen.text("NORMAN:\t\t\t\t\t\t1000", font, Point(80, 185));
-        screen.text("PETER:\t\t\t\t\t\t1000", font, Point(80, 205));
-
+        if(! IN_HS_INPUT){
+            for (auto e : MENU_ENTRIES){
+                screen.pen = e.active ? Pen(0, 255, 0) : Pen(255, 255, 255);
+                screen.text(e.name, font, e.pos);
+            }
+        }
     }
 
     if(IN_GAME){
@@ -193,8 +235,30 @@ void render(uint32_t time) {
         screen.text("MOVES:" + std::to_string(MOVES), minimal_font, Point(245, 25));
     }
 
+    if (IN_HS){
+        menuSurface->alpha = 25;
+        
+        menuSurface->pen = Pen(0,128,0);
+        
+        screen.stretch_blit(menuSurface, Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT), Rect(0, 0, SCREEN_WEIGHT, SCREEN_HEIGHT));
+        screen.pen = Pen(0,128,0);
+        screen.alpha = 128;
+        screen.rectangle(Rect(40, 0, 240, 240));
+        screen.pen = Pen(255, 255, 255);
+        screen.alpha = 255;
+
+        for (int i = 0; i < 7; i++){
+            screen.text(std::to_string(i + 1) + ".", font, Point(80, 85 + i * 20));
+            screen.text(SAVE_DATA[i].name, font, Point(100, 85 + i * 20), TextAlign::left);
+            screen.text(std::to_string(SAVE_DATA[i].score), font, Point(225, 85 + i * 20), TextAlign::center_right);
+        }
+    }
+
+    if (IN_HS_INPUT){
+        renderKeyboard();
+    }
+
   if(GAME_OVER){
-    renderGameOver();
     return;
   }
 }
@@ -221,7 +285,15 @@ void update(uint32_t time) {
         }
 
         if (buttons.released & Button::A){
-            if (HS_CONFIRM_SELECTED) return;
+            if (HS_CONFIRM_SELECTED){
+                saveRecord();
+                SCORE = 0;
+                strncpy(HS_ENTRY_NAME, "__________", 10);
+                HS_ENTRY_INDEX = 0;
+                IN_HS = false;
+                IN_HS_INPUT = false;
+                IN_MENU = true;                
+            }
             HS_ENTRY_NAME[HS_ENTRY_INDEX] = HS_CHAR_SELECTED;
             HS_ENTRY_INDEX++;
 
@@ -266,6 +338,7 @@ void update(uint32_t time) {
                 HS_CHAR_SELECTED = 'Z';
             }
         }
+        return;
     }
 
     if (IN_MENU) {
@@ -292,21 +365,37 @@ void update(uint32_t time) {
         return;
     }
 
-    if (buttons.released & Button::DPAD_UP){
-        moved = moveUp(MAP, &SCORE);
+    if (IN_GAME) {
+        if (buttons.released & Button::DPAD_UP){
+            moved = moveUp(MAP, &SCORE);
+        }
+        if (buttons.released & Button::DPAD_DOWN){
+            moved = moveDown(MAP, &SCORE);
+        }
+        if (buttons.released & Button::DPAD_LEFT){
+            moved = moveLeft(MAP, &SCORE);
+        }
+        if (buttons.released & Button::DPAD_RIGHT){
+            moved = moveRight(MAP, &SCORE);
+        }
+        if (moved){
+            genRandomPiece(MAP);
+            MOVES++;
+        }
+        GAME_OVER = ! canMove(MAP);
+        if (GAME_OVER) {
+            IN_GAME = false;
+            if (newRecord()){
+                IN_HS = false;
+                IN_MENU = true;
+                IN_HS_INPUT = true;
+            } else {
+                SCORE = 0;
+            }
+            memset(MAP, 0, sizeof(MAP));
+            MOVES = 0;
+            genRandomPiece(MAP);
+            genRandomPiece(MAP);
+        }
     }
-    if (buttons.released & Button::DPAD_DOWN){
-        moved = moveDown(MAP, &SCORE);
-    }
-    if (buttons.released & Button::DPAD_LEFT){
-        moved = moveLeft(MAP, &SCORE);
-    }
-    if (buttons.released & Button::DPAD_RIGHT){
-        moved = moveRight(MAP, &SCORE);
-    }
-    if (moved){
-        genRandomPiece(MAP);
-        MOVES++;
-    }
-    GAME_OVER = ! canMove(MAP);
 }
