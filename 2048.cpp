@@ -8,13 +8,9 @@ using namespace blit;
 #define SCREEN_HEIGHT 240
 #define SCREEN_WEIGHT 320
 #define SQURE_SIZE 58
-#define SHOW_FPS
+//#define SHOW_FPS
 
 int MAP[16] = {0};
-// int MAP[16] = {16384, 8192, 4096, 2048,
-//                65536, 32768, 2, 4,
-//                2, 2, 2, 4,
-//                2, 2, 2, 4};
 
 Surface* menuSurface;
 
