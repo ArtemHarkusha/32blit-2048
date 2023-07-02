@@ -101,7 +101,7 @@ void renderBackground(){
 }
 
 void renderKeyboard(){
-   char k[2];
+   char k[2] = {0};
 
    screen.alpha = 128;
    screen.pen = Pen(0, 255, 0);
@@ -325,6 +325,7 @@ void update(uint32_t time) {
                 SCORE = 0;
                 strncpy(HS_ENTRY_NAME, "__________", 10);
                 HS_CHAR_SELECTED = 'A';
+                HS_CONFIRM_SELECTED = false;
                 HS_ENTRY_INDEX = 0;
                 IN_HS = false;
                 IN_HS_INPUT = false;
@@ -423,11 +424,11 @@ void update(uint32_t time) {
             IN_GAME = false;
             if (newRecord()){
                 IN_HS = false;
-                IN_MENU = true;
                 IN_HS_INPUT = true;
             } else {
                 SCORE = 0;
             }
+            IN_MENU = true;
             memset(MAP, 0, sizeof(MAP));
             MOVES = 0;
             genRandomPiece(MAP);
