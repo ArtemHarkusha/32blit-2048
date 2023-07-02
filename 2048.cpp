@@ -26,7 +26,7 @@ bool GAME_OVER = false;
 bool IN_HS_INPUT = false;
 // initial highlighted charecter in high score saving
 char HS_CHAR_SELECTED = 'A';
-char HS_ENTRY_NAME[10] = {'_', '_', '_', '_', '_', '_', '_', '_', '_', '_'};
+char HS_ENTRY_NAME[11] = {'_', '_', '_', '_', '_', '_', '_', '_', '_', '_', 0};
 bool HS_CONFIRM_SELECTED = false;
 int HS_ENTRY_INDEX = 0;
 // initial SCORE
@@ -84,7 +84,7 @@ void init() {
         // loaded
     } else {
         for (int i = 0; i < 7; i++){
-            strncpy(SAVE_DATA[i].name, "__________", 10);
+            strncpy(SAVE_DATA[i].name, "__________", 11);
             SAVE_DATA[i].score = 0;
         }
     }
@@ -283,8 +283,8 @@ void render(uint32_t time) {
 
         for (int i = 0; i < 7; i++){
             screen.text(std::to_string(i + 1) + ".", font, Point(80, 85 + i * 20));
-            screen.text(SAVE_DATA[i].name, font, Point(100, 85 + i * 20), TextAlign::left);
-            screen.text(std::to_string(SAVE_DATA[i].score), font, Point(225, 85 + i * 20), TextAlign::center_right);
+            screen.text(SAVE_DATA[i].name, font, Point(100, 85 + i * 20), TextAlign::top_left);
+            screen.text(std::to_string(SAVE_DATA[i].score), font, Point(225, 85 + i * 20), TextAlign::top_right);
         }
     }
 
@@ -323,7 +323,7 @@ void update(uint32_t time) {
             if (HS_CONFIRM_SELECTED){
                 saveRecord();
                 SCORE = 0;
-                strncpy(HS_ENTRY_NAME, "__________", 10);
+                strncpy(HS_ENTRY_NAME, "__________", 11);
                 HS_CHAR_SELECTED = 'A';
                 HS_CONFIRM_SELECTED = false;
                 HS_ENTRY_INDEX = 0;
